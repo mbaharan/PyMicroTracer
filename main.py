@@ -59,7 +59,9 @@ if __name__ == "__main__":
     dp = DifferentialProcessor(db_file_name=args.trace_file, machine_mode=machine_mode, machine_arch=machine_arch,
                                log_handler=logging,  batch_size=batch_size, how_many_iteration=-1,
                                prefix_dir=args.result_directory, draw_dependency_graphs=args.draw_dependency_graph,
-                               app_name=args.application_name, log_output=False)
+                               app_name=args.application_name, log_output=False,
+                               fixed_instruction_windows_size=args.backend_instruction_windows_size,
+                               scheduling_option=args.scheduling_method)
 
     whole_ipc = dp.simulate_uniform(window_sizes=window_sizes, coverage=coverage)
 
@@ -102,7 +104,13 @@ if __name__ == "__main__":
     dict_per_bnch["windows"] = window_sizes
 
     print(whole_ipc)
-    file_name = args.result_directory + args.application_name + ".csv"
+    file_name = args.result_directory + args.application_name
+
+    if args.backend_instruction_windows_size:
+        file_name = file_name + args.backend_instruction_windows_size + ".csv"
+    else:
+        file_name = file_name + ".csv"
+
     save_result_as_csv(dict_per_bnch, file_name)
 
     t1 = time.time()

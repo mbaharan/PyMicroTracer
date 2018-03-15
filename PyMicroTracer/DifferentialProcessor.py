@@ -1,12 +1,13 @@
 import progressbar
-bar = progressbar.ProgressBar(redirect_stdout=True)
+bar = progressbar.ProgressBar()#redirect_stdout=True)
 
 
 class DifferentialProcessor:
 
     def __init__(self, db_file_name, machine_mode, machine_arch, log_handler, batch_size=1000, how_many_iteration=-1,
                  prefix_dir='./', app_name='',
-                 draw_dependency_graphs=False, log_output=True):
+                 draw_dependency_graphs=False, log_output=True, fixed_instruction_windows_size=None,
+                 scheduling_option=None):
 
         from os.path import isdir, isfile
         from sys import exit
@@ -27,10 +28,17 @@ class DifferentialProcessor:
         self._maximum_number_of_bbl = 0
         self._draw_dependency_graphs = draw_dependency_graphs
         self._how_many_bbl_has_been_fetched = 0
-        self._batch_size = max(batch_size, 2*17)
+
+        if batch_size > self.maximum_number_of_bbl:
+            self._batch_size = self.maximum_number_of_bbl
+        else:
+            self._batch_size = batch_size
+
         self._how_many_iteration = how_many_iteration
         self._app_name = app_name
         self._log_handler = log_handler
+        self.fixed_instruction_windows_size = fixed_instruction_windows_size
+        self.scheduling_option = scheduling_option
 
     @property
     def how_many_bbl_has_been_fetched(self):
@@ -141,7 +149,7 @@ class DifferentialProcessor:
         max_parallel_inst_hb = []
         backend_window_size_all = []
 
-        for window_size in window_sizes:
+        for window_size in sorted(window_sizes, reverse=True):
             self._log_handler.info("------------>window size:{}<------------".format(window_size))
 
             ipc_per_window_hyprid = []
@@ -163,7 +171,8 @@ class DifferentialProcessor:
                 [ipc_super, icc_hybrid, ipc_static, max_parallel_inst_sbb_per_ws, max_parallel_inst_hb_per_ws,
                  backend_window_size, offset] \
                     = self._simulate_behav(window_size=window_size, start_from_bbl_id=start_from_bbl_id,
-                                           end_bbl_id=end_bbl_id, should_run_static=should_run_static)
+                                           end_bbl_id=end_bbl_id, should_run_static=should_run_static,
+                                           which_arch=self.scheduling_option)
 
                 max_parallel_inst_hb_per_addr = max(max_parallel_inst_hb_per_addr, max_parallel_inst_hb_per_ws)
                 max_parallel_inst_sbb_per_addr = max(max_parallel_inst_sbb_per_addr, max_parallel_inst_sbb_per_ws)
@@ -209,7 +218,7 @@ class DifferentialProcessor:
         max_parallel_inst_sbb = -1
         max_parallel_inst_hb = -1
 
-        backend_window_size = _calculate_instr_window_size(window_size)
+        backend_window_size = self._calculate_instr_window_size(window_size)
 
         if 'h' in which_arch:
             hbb = HybridBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
@@ -231,7 +240,8 @@ class DifferentialProcessor:
             sbb.fetch_instructions(end_bbl_id=end_bbl_id)
             print("Extracting IPC for super bbl...")
             self._log_handler.info("Extracting IPC for super bbl...")
-            [ipc_super, max_parallel_inst_sbb] = sbb.extract_ipc_based_on_rob(window_size=window_size)
+            [ipc_super, max_parallel_inst_sbb] = sbb.extract_ipc_based_on_rob(window_size=window_size,
+                                                                              save_output=self._draw_dependency_graphs)
             del sbb
 
         if 't' in which_arch and should_run_static:
@@ -248,6 +258,17 @@ class DifferentialProcessor:
 
         return [ipc_super, icc_hybrid, ipc_static, max_parallel_inst_sbb, max_parallel_inst_hb,
                 backend_window_size, offset]
+
+    def _calculate_instr_window_size(self, bbl_window_size):
+
+        if self.fixed_instruction_windows_size:
+            return self.fixed_instruction_windows_size
+        else:
+            from math import log2, ceil
+            a = 1.381
+            b = 0.7693
+            p = log2(bbl_window_size)
+            return ceil(a * (2 ** (b * p)))
 
 
 def _generate_address(batch_size, max_bbl_id, coverage):
@@ -268,12 +289,3 @@ def _generate_address(batch_size, max_bbl_id, coverage):
         addresses.append([start, end])
 
     return addresses
-
-
-def _calculate_instr_window_size(bbl_window_size):
-    from math import log2, ceil
-    a = 1.381
-    b = 0.7693
-    p = log2(bbl_window_size)
-    window_size = ceil(a * (2 ** (b * p)))
-    return window_size

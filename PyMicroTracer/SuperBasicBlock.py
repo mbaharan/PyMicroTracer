@@ -195,19 +195,123 @@ class SuperBasicBlock:
 
         return dependency_graph
 
-    def export_graph_as_dot(self, data_portion=[], dependency_graph=None, suffix_name='', also_as_pdf=False):
+    def export_graph_as_dot(self, data_portion=[], dependency_graph=None, suffix_name='', cluster_based_on_cycle=False):
+
+        import pydot
         if dependency_graph != -1:
-            from networkx.drawing.nx_agraph import write_dot
+
+            from colour import Color
+            grey = Color("#BEBEBE")
+            dp_pydot = pydot.Dot(graph_type='digraph',
+                                 fontname="Verdana")  # nx.drawing.nx_pydot.to_pydot(dependency_graph)
+            [levels, non] = self.find_levels(dependency_graph.copy())
+
+            if cluster_based_on_cycle:
+
+                colors = list(grey.range_to(Color("#FFFFFF"), len(levels)))
+
+                index = 0
+                for level in levels:
+                    cluster = pydot.Cluster('cycle{}'.format(index), label='cycle {}'.format(index),
+                                            style='filled', color='"{}"'.format(colors[index]), shape="circle")
+                    for node in level:
+                        cluster.add_node(pydot.Node(node, label="BB# %d - %s" %
+                                                                (data_portion[node].BBid, data_portion[node])))
+                    index = index + 1
+                    dp_pydot.add_subgraph(cluster)
+
+                for nodes in dependency_graph.node:
+                    edges = dependency_graph.edges(nodes)
+                    for edge in edges:
+                        dp_pydot.add_edge(pydot.Edge(edge[0], edge[1]))
+
+                base_file_name = self.prefix + 'depthGraph_SuperBasicBlock' + suffix_name
+                dp_pydot.write(base_file_name+'.dot')
+
+            else:
+
+                BBids = set()
+                for inst in data_portion:
+                    BBids.add(inst.BBid)
+
+                colors = list(grey.range_to(Color("#FFFFFF"), len(BBids)))
+                cluster = pydot.Cluster('cycles', label='cycles')
+
+                for i in range(0, len(levels)):
+                    cluster.add_node(pydot.Node('cycle{}'.format(i), label='cycle {}'.format(i)))
+
+                for i in range(0, len(levels)-1):
+                    cluster.add_edge(pydot.Edge('cycle{}'.format(i), 'cycle{}'.format(i+1)))
+
+                dp_pydot.add_subgraph(cluster)
+
+                index = 0
+                for bb_id in BBids:
+                    cluster = pydot.Cluster('bb{}'.format(bb_id), label='basic block {}'.format(bb_id))
+                    for node in dependency_graph.node:
+                        if data_portion[node].BBid == bb_id:
+                            cluster.add_node(pydot.Node(node,
+                                                        label="BB# %d - %s" % (data_portion[node].BBid,
+                                                                               data_portion[node]),
+                                                        style='filled', fillcolor='"{}"'.format(colors[index])))
+                    dp_pydot.add_subgraph(cluster)
+                    index = index + 1
+
+                for nodes in dependency_graph.node:
+                    edges = dependency_graph.edges(nodes)
+                    for edge in edges:
+                        dp_pydot.add_edge(pydot.Edge(edge[0], edge[1]))
+
+                index=0
+                for level in levels:
+                    ranking = pydot.Subgraph(rank='same')
+                    ranking.add_node(pydot.Node('cycle{}'.format(index)))
+                    for node in dependency_graph.nodes:
+                        if node in level:
+                            ranking.add_node(pydot.Node(node))
+                    index = index + 1
+                    dp_pydot.add_subgraph(ranking)
+
+                base_file_name = self.prefix + 'depthGraph_SuperBasicBlock' + suffix_name
+                dp_pydot.write(base_file_name+'.dot')
+
+
+
+
+    """
+            if mark_longest_path:
+                path = nx.dag_longest_path(dependency_graph)
+                # for node in path:
+                #    dependency_graph.node[int(node)]['color'] = 'red'
+                for i in range(len(path) - 1):
+                    dependency_graph[int(path[i])][int(path[i + 1])]['color'] = 'red'
+                    dependency_graph[int(path[i])][int(path[i + 1])]['width'] = '8'
+
+            if mark_levels:
+                [levels, non] = self.find_levels(dependency_graph.copy())
+                from colour import Color
+                grey = Color("#F5DEB3")
+                colors = list(grey.range_to(Color("#D2B48C"), len(levels)))
+                i = 0
+                for level in levels:
+
+                    for node in level:
+                        dependency_graph.node[int(node)]['style'] = 'filled'
+                        dependency_graph.node[int(node)]['fillcolor'] = colors[i].get_hex()
+                    i = i + 1
+
             labels = {}
+            len_data = len(data_portion)
             i = 0
             for inst in data_portion:
-                labels[i] = "%s - %d) %s" % (str(i), inst.BBid, inst)
+                labels[i] = "%s - %d) %s" % (str(len_data-i), inst.BBid, inst)
                 i = i + 1
 
-            renamed_graph = nx.relabel_nodes(dependency_graph, labels)
-            assert (renamed_graph.order() == len(data_portion))
+            #renamed_graph = nx.relabel_nodes(dependency_graph, labels)
+            #assert (renamed_graph.order() == len(data_portion))
             base_file_name = self.prefix + 'depthGraph_SuperBasicBlock' + suffix_name
-            write_dot(renamed_graph, base_file_name + '.dot')
+            write_dot(dependency_graph, base_file_name + '.dot')
+            write_dot(g, base_file_name + '_G.dot')
 
             if also_as_pdf:
                 import pydot
@@ -215,6 +319,7 @@ class SuperBasicBlock:
                 graph.write_pdf(base_file_name + '.pdf')
         else:
             self.log_handler.error("Cannot export graph as a PDF.")
+    """
 
     def extract_ipc(self, dependency_graph):
         if nx.is_directed(dependency_graph):

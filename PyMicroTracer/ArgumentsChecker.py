@@ -60,6 +60,24 @@ def extant_file(value):
     return value
 
 
+def check_scheduling(value):
+    right_values = set()
+    try:
+        schs = value.split(',')
+        for sch in schs:
+            SCH = sch.upper()
+            if SCH in ['H', 'S', 'O']:
+                right_values.add(SCH)
+    except IndexError:
+        raise argparse.ArgumentTypeError("'{}' is not in the right format. Please see document or "
+                                         "run the main with `-h`\n option.".format(value))
+
+    if len(right_values) == 0:
+        right_values |= set(['H', 'S', 'O'])
+
+    return list(right_values)
+
+
 check_coverage = functools.partial(check_range, min_val=0, max_val=100)
 
 
@@ -77,6 +95,20 @@ parser.add_argument("result_directory", help="A directory path for saving log fi
 
 parser.add_argument("application_name", help="Application name.")
 
-parser.add_argument("-d", "--draw_dependency_graph", help="Increase output verbosity", action="store_true")
+parser.add_argument("-d", "--draw_dependency_graph", help="Draws data dependency graph in `dot` format files.",
+                    action="store_true")
+
+parser.add_argument("-b", "--backend_instruction_windows_size", help="Only for hybrid model. If you want to define a "
+                                                                     "fixed back-end instruction window size, use this "
+                                                                     "option.", type=int)
+
+parser.add_argument("-s", "--scheduling_method", help="There are three different scheduling options as follows:"
+                                                      "\n\t O: Out-of-order."
+                                                      "\n\t S: Static scheduling."
+                                                      "\n\t H: Hybrid scheduling."
+                                                      "If user wants to analyze both out-of-order and "
+                                                      "hybrid scheduling, he/she should pass the argument as follows:"
+                                                      "\n\t -s O,H", type=check_scheduling)
+
 
 args = parser.parse_args()
