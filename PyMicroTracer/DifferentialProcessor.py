@@ -1,5 +1,12 @@
 import progressbar
-bar = progressbar.ProgressBar()#redirect_stdout=True)
+bar = progressbar.ProgressBar(widgets=[
+    '(',
+    progressbar.Percentage(),
+    ') [',
+    progressbar.Bar(),
+    '] [', progressbar.Timer(), ', '
+    , progressbar.ETA(), '] ',
+], redirect_stdout=True)
 
 
 class DifferentialProcessor:
@@ -205,7 +212,7 @@ class DifferentialProcessor:
         return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb, backend_window_size_all]
 
     def _simulate_behav(self, window_size, start_from_bbl_id, end_bbl_id, should_run_static=True,
-                        which_arch=['s', 'h', 't']):
+                        which_arch=set(['S', 'H', 'O'])):
 
         from PyMicroTracer.SuperBasicBlock import SuperBasicBlock
         from PyMicroTracer.HybridBasicBlock import HybridBasicBlock
@@ -220,7 +227,7 @@ class DifferentialProcessor:
 
         backend_window_size = self._calculate_instr_window_size(window_size)
 
-        if 'h' in which_arch:
+        if 'H' in which_arch:
             hbb = HybridBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
                                    machine_mode=self._machine_mode, machine_arch=self._machine_arch,
                                    log_handler=self._log_handler,
@@ -232,7 +239,7 @@ class DifferentialProcessor:
             [icc_hybrid, max_parallel_inst_hb] = hbb.extract_ipc_based_on_bbl(bbl_size_scheduler=window_size)
             del hbb
 
-        if 's' in which_arch:
+        if 'O' in which_arch:
             sbb = SuperBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
                                   machine_mode=self._machine_mode, machine_arch=self._machine_arch,
                                   log_handler=self._log_handler,
@@ -244,7 +251,7 @@ class DifferentialProcessor:
                                                                               save_output=self._draw_dependency_graphs)
             del sbb
 
-        if 't' in which_arch and should_run_static:
+        if 'S' in which_arch and should_run_static:
             st_bbl = BasicBlockParser(db_name=self._db_file_name, machine_mode=self._machine_mode,
                                       machine_arch=self._machine_arch,
                                       log_handler=self._log_handler, offset=offset,

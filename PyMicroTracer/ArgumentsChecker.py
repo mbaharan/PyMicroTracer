@@ -108,7 +108,12 @@ parser.add_argument("-s", "--scheduling_method", help="There are three different
                                                       "\n\t H: Hybrid scheduling."
                                                       "If user wants to analyze both out-of-order and "
                                                       "hybrid scheduling, he/she should pass the argument as follows:"
-                                                      "\n\t -s O,H", type=check_scheduling)
+                                                      "\n\t -s O,H",
+                    type=check_scheduling,
+                    default=set(['H', 'S', 'O']))
+
+parser.add_argument("-p", "--plot", help="Plots the final IPC for different ",
+                    action="store_true", default=False)
 
 
 args = parser.parse_args()

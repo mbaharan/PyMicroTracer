@@ -31,13 +31,9 @@ if __name__ == "__main__":
     window_sizes = [2**power for power in powers]
 
     coverage = float(args.coverage)
-    batch_size = 2*max(powers)
+    batch_size = 2*max(powers) # To capture the dependency across BB better
 
     fig_axis = plt.subplots()
-
-    x_tick_labels = []
-    for i in powers:
-        x_tick_labels.append("$2^{%d}$" % i)
 
     t0 = time.time()
 
@@ -47,6 +43,7 @@ if __name__ == "__main__":
     print('Working on: {}'.format(args.application_name))
     dict_per_bnch={}
     frmt = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
+
     logging.basicConfig(format=frmt, filename=args.result_directory+args.application_name+'_info.log',
                         level=logging.INFO)
     logging.basicConfig(format=frmt, filename=args.result_directory+args.application_name+'_warn.log',
@@ -65,56 +62,69 @@ if __name__ == "__main__":
 
     whole_ipc = dp.simulate_uniform(window_sizes=window_sizes, coverage=coverage)
 
-    y_scale = []  # ['log', 10]
+    if args.plot:
 
-    x2_tick_labels = []
-    for b_i_s_w in whole_ipc[5]:
-        x2_tick_labels.append(b_i_s_w)
+        x_tick_labels = []
+        for i in powers:
+            x_tick_labels.append("$2^{%d}$" % i)
 
-    print(x2_tick_labels)
+        y_scale = []  # ['log', 10]
 
-    plot_me(x=window_sizes, y=whole_ipc[0], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
-            xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=hybrid_line_style[0],
-            label=args.application_name+" hyprid-bbl", legenLoc="upper left", x2=whole_ipc[5],
-            x2TickLabels=x2_tick_labels, x2Ticks=whole_ipc[5])
+        x2_tick_labels = []
+        for b_i_s_w in whole_ipc[5]:
+            x2_tick_labels.append(b_i_s_w)
 
-    plot_me(x=window_sizes, y=whole_ipc[1], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
-            xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=ins_line_style[0],
-            label=args.application_name+" super-bbl", legenLoc="upper left", x2=whole_ipc[5],
-            x2TickLabels=x2_tick_labels, x2Ticks=whole_ipc[5])
+        if 'H' in args.scheduling_method:
+            plot_me(x=window_sizes, y=whole_ipc[0], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
+                    xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=hybrid_line_style[0],
+                    label=args.application_name+" hyprid-bbl", legenLoc="upper left", x2=whole_ipc[5],
+                    x2TickLabels=x2_tick_labels, x2Ticks=whole_ipc[5])
 
-    plot_me(x=window_sizes, y=whole_ipc[2], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
-            xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=static_line_style[0],
-            label=args.application_name + " static-bbl", legenLoc="upper left", x2=whole_ipc[5],
-            x2TickLabels=x2_tick_labels, x2Ticks=whole_ipc[5])
+        if 'O' in args.scheduling_method:
+            plot_me(x=window_sizes, y=whole_ipc[1], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
+                    xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=ins_line_style[0],
+                    label=args.application_name+" super-bbl", legenLoc="upper left", x2=whole_ipc[5],
+                    x2TickLabels=x2_tick_labels, x2Ticks=whole_ipc[5])
 
-        #plot_me(x=window_sizes, y=whole_ipc[3], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
-        #        xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=max_scheduled_inst_hbb[idx],
-        #        label=args.application_name + " max schld instr hbb", legenLoc="upper left")
-#
-        #plot_me(x=window_sizes, y=whole_ipc[4], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
-        #        xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=max_scheduled_inst_sbp[idx],
-        #        label=args.application_name + " max schld instr sbb", legenLoc="upper left")
+        if 'S' in args.scheduling_method:
+            plot_me(x=window_sizes, y=whole_ipc[2], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
+                    xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=static_line_style[0],
+                    label=args.application_name + " static-bbl", legenLoc="upper left", x2=whole_ipc[5],
+                    x2TickLabels=x2_tick_labels, x2Ticks=whole_ipc[5])
 
-    dict_per_bnch["hybrid"] = whole_ipc[0]
-    dict_per_bnch["super"] = whole_ipc[1]
-    dict_per_bnch["static"] = whole_ipc[2]
-    dict_per_bnch["max_sched_hbb"] = whole_ipc[3]
+    #plot_me(x=window_sizes, y=whole_ipc[3], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
+    #        xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=max_scheduled_inst_hbb[idx],
+    #        label=args.application_name + " max schld instr hbb", legenLoc="upper left")
+    #
+    #plot_me(x=window_sizes, y=whole_ipc[4], yScale=y_scale, xTicks=window_sizes, xTickLabels=x_tick_labels,
+    #        xLabel='Window Size', yLabel='IPC', figAxis=fig_axis, style=max_scheduled_inst_sbp[idx],
+    #        label=args.application_name + " max schld instr sbb", legenLoc="upper left")
+
+    back_end_str = ''
+    if args.backend_instruction_windows_size:
+        back_end_str = str(args.backend_instruction_windows_size)
+
+    if 'H' in args.scheduling_method:
+        dict_per_bnch["hybrid"] = whole_ipc[0]
+    if 'O' in args.scheduling_method:
+        dict_per_bnch["super"] = whole_ipc[1]
+    if 'S' in args.scheduling_method:
+        dict_per_bnch["static"] = whole_ipc[2]
+
+    dict_per_bnch["max_sched_hbb" + back_end_str] = whole_ipc[3]
     dict_per_bnch["max_sched_sbb"] = whole_ipc[4]
     dict_per_bnch["windows"] = window_sizes
 
     print(whole_ipc)
     file_name = args.result_directory + args.application_name
 
-    if args.backend_instruction_windows_size:
-        file_name = file_name + args.backend_instruction_windows_size + ".csv"
-    else:
-        file_name = file_name + ".csv"
+    file_name = file_name + back_end_str + ".csv"
 
     save_result_as_csv(dict_per_bnch, file_name)
 
     t1 = time.time()
     format_second(t1 - t0)
 
-    plt.show()
+    if args.plot:
+        plt.show()
 
