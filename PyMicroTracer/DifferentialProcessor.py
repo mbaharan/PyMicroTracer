@@ -1,13 +1,4 @@
 import progressbar
-bar = progressbar.ProgressBar(widgets=[
-    '(',
-    progressbar.Percentage(),
-    ') [',
-    progressbar.Bar(),
-    '] [', progressbar.Timer(), ', '
-    , progressbar.ETA(), '] ',
-], redirect_stdout=True)
-
 
 class DifferentialProcessor:
 
@@ -46,6 +37,12 @@ class DifferentialProcessor:
         self._log_handler = log_handler
         self.fixed_instruction_windows_size = fixed_instruction_windows_size
         self.scheduling_option = scheduling_option
+
+        self.bar = progressbar.ProgressBar(widgets=['( {}: '.format(self._app_name), progressbar.Percentage(), ') [',
+                                                    progressbar.Bar(),
+                                                    '] [', progressbar.Timer(), ', ',
+                                                    progressbar.ETA(), '] ',
+                                                    ], redirect_stdout=True)
 
     @property
     def how_many_bbl_has_been_fetched(self):
@@ -89,7 +86,7 @@ class DifferentialProcessor:
 
         count = 0
         total = len(window_sizes) * max_idx
-        bar.update(0.0)
+        self.bar.update(0.0)
         for window_size in window_sizes:
             self._log_handler.info("------------>window size:{}<------------".format(window_size))
             if passed_start_from_bbl_id < 0:
@@ -119,7 +116,7 @@ class DifferentialProcessor:
 
                 start_from_bbl_id = offset
                 count = count + 1
-                bar.update(count * 100 / total)
+                self.bar.update(count * 100 / total)
 
             if len(ipc_per_window_hyprid):
                 hybrid_ipc.append(sum(ipc_per_window_hyprid)/len(ipc_per_window_hyprid))
@@ -148,7 +145,7 @@ class DifferentialProcessor:
         how_many_addr = len(addresses)
         count = 0
         total = len(window_sizes) * how_many_addr
-        bar.update(0.0)
+        self.bar.update(0.0)
         prev_static_ipc = 0
         should_run_static = True
 
@@ -156,7 +153,7 @@ class DifferentialProcessor:
         max_parallel_inst_hb = []
         backend_window_size_all = []
 
-        for window_size in sorted(window_sizes, reverse=True):
+        for window_size in window_sizes:
             self._log_handler.info("------------>window size:{}<------------".format(window_size))
 
             ipc_per_window_hyprid = []
@@ -189,7 +186,7 @@ class DifferentialProcessor:
                 static_ipc_per_window.append(ipc_static)
 
                 count = count + 1
-                bar.update(count * 100 / total)
+                self.bar.update(count * 100 / total)
 
             max_parallel_inst_sbb.append(max_parallel_inst_sbb_per_addr)
             max_parallel_inst_hb.append(max_parallel_inst_hb_per_addr)

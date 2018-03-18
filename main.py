@@ -27,11 +27,11 @@ if __name__ == "__main__":
 
     [min_w, max_w] = get_window_sizes(args.window_size)
 
-    powers = [i for i in range(min_w, max_w+1)]
+    powers = sorted([i for i in range(min_w, max_w+1)], reverse=True)
     window_sizes = [2**power for power in powers]
 
     coverage = float(args.coverage)
-    batch_size = 2*max(powers) # To capture the dependency across BB better
+    batch_size = 2*max(window_sizes) # To capture the dependency across BB better
 
     fig_axis = plt.subplots()
 
