@@ -43,7 +43,7 @@ class DifferentialProcessor:
                                                     progressbar.Bar(),
                                                     '] [', progressbar.Timer(), ', ',
                                                     progressbar.ETA(), '] ',
-                                                    ])#, redirect_stdout=True)
+                                                    ], redirect_stdout=True)
 
     @property
     def how_many_bbl_has_been_fetched(self):
