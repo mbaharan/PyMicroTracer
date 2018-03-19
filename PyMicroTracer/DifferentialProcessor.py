@@ -1,5 +1,6 @@
 import progressbar
 
+
 class DifferentialProcessor:
 
     def __init__(self, db_file_name, machine_mode, machine_arch, log_handler, batch_size=1000, how_many_iteration=-1,
@@ -42,7 +43,7 @@ class DifferentialProcessor:
                                                     progressbar.Bar(),
                                                     '] [', progressbar.Timer(), ', ',
                                                     progressbar.ETA(), '] ',
-                                                    ], redirect_stdout=True)
+                                                    ])#, redirect_stdout=True)
 
     @property
     def how_many_bbl_has_been_fetched(self):
@@ -131,9 +132,12 @@ class DifferentialProcessor:
         if not isinstance(window_sizes, type([])):
             exit("window size should list of positive integers")
 
-        hybrid_ipc = []
+        from numpy import zeros
+
+        hybrid_ipc = None
         super_ipc = []
         static_ipc = []
+        backend_end_size = 0
 
         if 0 < coverage <= 100:
             addresses = _generate_address(batch_size=self._batch_size, max_bbl_id=self.maximum_number_of_bbl,
@@ -151,12 +155,12 @@ class DifferentialProcessor:
 
         max_parallel_inst_sbb = []
         max_parallel_inst_hb = []
-        backend_window_size_all = []
 
+        w_index = 0
         for window_size in window_sizes:
             self._log_handler.info("------------>window size:{}<------------".format(window_size))
 
-            ipc_per_window_hyprid = []
+            ipc_per_window_hyprid = None
             ipc_per_window_super = []
             static_ipc_per_window = []
 
@@ -178,11 +182,18 @@ class DifferentialProcessor:
                                            end_bbl_id=end_bbl_id, should_run_static=should_run_static,
                                            which_arch=self.scheduling_option)
 
+                if ipc_per_window_hyprid is None:
+                    backend_end_size = len(icc_hybrid)
+                    ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
+
+                if hybrid_ipc is None:
+                    hybrid_ipc = zeros((len(window_sizes), len(icc_hybrid)))
+
                 max_parallel_inst_hb_per_addr = max(max_parallel_inst_hb_per_addr, max_parallel_inst_hb_per_ws)
                 max_parallel_inst_sbb_per_addr = max(max_parallel_inst_sbb_per_addr, max_parallel_inst_sbb_per_ws)
 
                 ipc_per_window_super.append(ipc_super)
-                ipc_per_window_hyprid.append(icc_hybrid)
+                ipc_per_window_hyprid[idx, :] = icc_hybrid[:, 0]
                 static_ipc_per_window.append(ipc_static)
 
                 count = count + 1
@@ -190,10 +201,12 @@ class DifferentialProcessor:
 
             max_parallel_inst_sbb.append(max_parallel_inst_sbb_per_addr)
             max_parallel_inst_hb.append(max_parallel_inst_hb_per_addr)
-            backend_window_size_all.append(backend_window_size)
 
-            if len(ipc_per_window_hyprid):
-                hybrid_ipc.append(sum(ipc_per_window_hyprid)/len(ipc_per_window_hyprid))
+            for idx in range(0, backend_end_size):
+                hybrid_ipc[w_index, idx] = sum(ipc_per_window_hyprid[:, idx]) / how_many_addr
+
+            w_index = w_index + 1
+
             if len(ipc_per_window_super):
                 super_ipc.append(sum(ipc_per_window_super)/len(ipc_per_window_super))
 
@@ -206,7 +219,8 @@ class DifferentialProcessor:
 
             should_run_static = False
 
-        return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb, backend_window_size_all]
+        return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb,
+                list(backend_window_size)]
 
     def _simulate_behav(self, window_size, start_from_bbl_id, end_bbl_id, should_run_static=True,
                         which_arch=set(['S', 'H', 'O'])):

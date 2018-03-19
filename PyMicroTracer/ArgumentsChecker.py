@@ -100,7 +100,7 @@ parser.add_argument("-d", "--draw_dependency_graph", help="Draws data dependency
 
 parser.add_argument("-b", "--backend_instruction_windows_size", help="Only for hybrid model. If you want to define a "
                                                                      "fixed back-end instruction window size, use this "
-                                                                     "option.", type=int)
+                                                                     "option.", type=check_window_size)
 
 parser.add_argument("-s", "--scheduling_method", help="There are three different scheduling options as follows:"
                                                       "\n\t O: Out-of-order."

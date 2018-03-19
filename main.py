@@ -26,6 +26,8 @@ if __name__ == "__main__":
     max_scheduled_inst_sbp = ['kx']
 
     [min_w, max_w] = get_window_sizes(args.window_size)
+    [min_wb, max_wb] = get_window_sizes(args.backend_instruction_windows_size)
+    fix_b_window = sorted([2**i for i in range(min_wb, max_wb+1)], reverse=True)
 
     powers = sorted([i for i in range(min_w, max_w+1)], reverse=True)
     window_sizes = [2**power for power in powers]
@@ -57,7 +59,7 @@ if __name__ == "__main__":
                                log_handler=logging,  batch_size=batch_size, how_many_iteration=-1,
                                prefix_dir=args.result_directory, draw_dependency_graphs=args.draw_dependency_graph,
                                app_name=args.application_name, log_output=False,
-                               fixed_instruction_windows_size=args.backend_instruction_windows_size,
+                               fixed_instruction_windows_size=fix_b_window,
                                scheduling_option=args.scheduling_method)
 
     whole_ipc = dp.simulate_uniform(window_sizes=window_sizes, coverage=coverage)
@@ -101,24 +103,25 @@ if __name__ == "__main__":
     #        label=args.application_name + " max schld instr sbb", legenLoc="upper left")
 
     back_end_str = ''
-    if args.backend_instruction_windows_size:
-        back_end_str = str(args.backend_instruction_windows_size)
 
     if 'H' in args.scheduling_method:
-        dict_per_bnch["hybrid"] = whole_ipc[0]
+        h_ipc = whole_ipc[0]
+        for b_idx in range(0, len(whole_ipc[5])):
+            back_end_str = str(whole_ipc[5][b_idx])
+            dict_per_bnch["hybrid_"+back_end_str] = h_ipc[:, b_idx]
     if 'O' in args.scheduling_method:
         dict_per_bnch["super"] = whole_ipc[1]
     if 'S' in args.scheduling_method:
         dict_per_bnch["static"] = whole_ipc[2]
 
-    dict_per_bnch["max_sched_hbb" + back_end_str] = whole_ipc[3]
+    dict_per_bnch["max_sched_hbb" + back_end_str] = list(whole_ipc[3])
     dict_per_bnch["max_sched_sbb"] = whole_ipc[4]
     dict_per_bnch["windows"] = window_sizes
 
     print(whole_ipc)
     file_name = args.result_directory + args.application_name
 
-    file_name = file_name + back_end_str + ".csv"
+    file_name = file_name + ".csv"
 
     save_result_as_csv(dict_per_bnch, file_name)
 
