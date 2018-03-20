@@ -397,9 +397,9 @@ class SuperBasicBlock:
                     data_portion = data_source[start:end]
                     dependency_matrix = self.extract_raw_dep(data_portion=data_portion)
                     dependency_graph = self.extract_graph(dependency_matrix=dependency_matrix)
+                    [level_local, max_local] = self.find_levels(dependency_graph.copy())
                     self.extract_ipc(dependency_graph=dependency_graph)
                     local_ipc.append(self.IPC)
-                    [level_local, max_local] = self.find_levels(dependency_graph.copy())
                     max_parallel_inst = max(max_local, max_parallel_inst)
 
                     if save_output:

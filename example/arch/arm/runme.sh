@@ -11,14 +11,5 @@ coverage="100"
 resultFolder="./res/"
 applicationName="hello"
 
+../../../main.py $traceFile $coverage 5,14 $resultFolder $applicationName -b 5,8 -s h
 
-
-declare -a arrPolicy=("32" "64" "128" "256")
-
-str=""
-
-for policy in "${arrPolicy[@]}"
-do
-	echo "back end size: $policy"
-	../../../main.py $traceFile $coverage 5,14 $resultFolder $applicationName -b $policy -s h
-done

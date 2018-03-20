@@ -123,11 +123,12 @@ class HybridBasicBlock(SuperBasicBlock):
 
         vals = list()
         from math import ceil
-        cycles = 0
 
         for backend_instruction_windows_size in instruction_scheduler_window_sizes:
+            cycles = 0
             print("Backed-end instruction scheduler windows size:{}".format(backend_instruction_windows_size))
-            self.log_handler.info("Backed-end instruction scheduler windows size:{}".format(backend_instruction_windows_size))
+            self.log_handler.info("Backed-end instruction scheduler windows size:{}"
+                                  .format(backend_instruction_windows_size))
 
             for level in levels:
                 cycles = cycles + max(ceil(len(level)/backend_instruction_windows_size), 1)
