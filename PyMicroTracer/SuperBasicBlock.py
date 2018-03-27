@@ -214,9 +214,12 @@ class SuperBasicBlock:
                 for level in levels:
                     cluster = pydot.Cluster('cycle{}'.format(index), label='cycle {}'.format(index),
                                             style='filled', color='"{}"'.format(colors[index]), shape="circle")
+                    inst_id = 0
                     for node in level:
-                        cluster.add_node(pydot.Node(node, label="BB# %d - %s" %
-                                                                (data_portion[node].BBid, data_portion[node])))
+                        cluster.add_node(pydot.Node(node, label="BB# %d id= %d- %s" %
+                                                                (data_portion[node].BBid, inst_id, data_portion[node])))
+                        inst_id = inst_id + 1
+
                     index = index + 1
                     dp_pydot.add_subgraph(cluster)
 
@@ -371,7 +374,7 @@ class SuperBasicBlock:
                 graph.remove_node(n)
         return [levels, max_parallel_inst]
 
-    def extract_ipc_based_on_rob(self, window_size=-1, data_source=None, save_output=False):
+    def extract_ipc_based_on_rob(self, window_size=-1, data_source=None, save_output=False, save_local_level=True):
         if data_source is None:
             data_source = self.parsedInst
 
@@ -398,6 +401,14 @@ class SuperBasicBlock:
                     dependency_matrix = self.extract_raw_dep(data_portion=data_portion)
                     dependency_graph = self.extract_graph(dependency_matrix=dependency_matrix)
                     [level_local, max_local] = self.find_levels(dependency_graph.copy())
+
+                    if save_local_level:
+                        filename = self.prefix + "local_val.log"
+                        with open(filename, "a") as log_file_level:
+                            for level in level_local:
+                                how_many = str(len(level)) + '\n'
+                                log_file_level.writelines(how_many)
+
                     self.extract_ipc(dependency_graph=dependency_graph)
                     local_ipc.append(self.IPC)
                     max_parallel_inst = max(max_local, max_parallel_inst)
