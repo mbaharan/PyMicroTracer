@@ -6,10 +6,10 @@
 #3 -> result folder
 #4 -> application name
 
-traceFile="hello_trace.db"
+traceFile="loop_trace.db"
 coverage="100"
 resultFolder="./res/"
-applicationName="hello"
+applicationName="loop"
 
-../../../main.py $traceFile $coverage 5,14 $resultFolder $applicationName -b 5,8 -s h
+../../../main.py $traceFile $coverage 3,5 $resultFolder $applicationName -b 5,6 -s o,h -d
 
