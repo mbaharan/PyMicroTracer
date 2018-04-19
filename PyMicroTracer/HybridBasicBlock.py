@@ -70,7 +70,9 @@ class HybridBasicBlock(SuperBasicBlock):
 
             if not infinite_scheduler:
                 window_size = self._instruction_scheduler_window_size
+
                 len_backend = len(window_size)
+
                 ipc = zeros((how_many_seg, len_backend))
                 val = zeros((len_backend, 1))
 

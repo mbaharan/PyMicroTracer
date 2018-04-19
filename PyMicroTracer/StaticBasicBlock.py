@@ -301,12 +301,12 @@ if __name__ == "__main__":
     t0 = time.time()
     fileName = ['../example/arch/arm/hello_trace.db']
     res = ['../example/arch/arm/res/']
-    from capstone import CS_ARCH_X86, CS_MODE_64, CS_MODE_ARM, CS_MODE_V8, CS_ARCH_ARM
+    from capstone import CS_ARCH_X86, CS_MODE_64
 
     howManyBB = 1232
 
-    m_m = CS_MODE_ARM + CS_MODE_V8
-    m_a = CS_ARCH_ARM
+    m_m = CS_MODE_64
+    m_a = CS_ARCH_X86
 
     bbl_parser = BasicBlockParser(db_name=fileName[0], prefix=res[0], machine_arch=m_a, machine_mode=m_m,
                                   how_many_bbl_should_be_analyzed=howManyBB, based_on_bbl_id=True, log_handler=logging)

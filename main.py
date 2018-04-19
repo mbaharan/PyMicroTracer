@@ -10,7 +10,7 @@ __email__ = "mbaharan@uncc.edu"
 __status__ = "Research"
 
 from PyMicroTracer import DifferentialProcessor, plot_me, format_second, save_result_as_csv
-from capstone import CS_ARCH_X86, CS_MODE_64, CS_MODE_ARM, CS_MODE_V8, CS_ARCH_ARM
+from capstone import CS_ARCH_X86, CS_MODE_64
 import time
 import matplotlib.pyplot as plt
 import logging
@@ -26,21 +26,23 @@ if __name__ == "__main__":
     max_scheduled_inst_sbp = ['kx']
 
     [min_w, max_w] = get_window_sizes(args.window_size)
-    [min_wb, max_wb] = get_window_sizes(args.backend_instruction_windows_size)
-    fix_b_window = sorted([2**i for i in range(min_wb, max_wb+1)], reverse=True)
+    fix_b_window = []
+    if args.backend_instruction_windows_size:
+        [min_wb, max_wb] = get_window_sizes(args.backend_instruction_windows_size)
+        fix_b_window = sorted([2**i for i in range(min_wb, max_wb+1)], reverse=True)
 
     powers = sorted([i for i in range(min_w, max_w+1)], reverse=True)
     window_sizes = [2**power for power in powers]
 
     coverage = float(args.coverage)
-    batch_size = 2*max(window_sizes) # To capture the dependency across BB better
+    batch_size = 2*max(window_sizes)  # To capture the dependency across BB better
 
     fig_axis = plt.subplots()
 
     t0 = time.time()
 
-    machine_mode = CS_MODE_ARM + CS_MODE_V8
-    machine_arch = CS_ARCH_ARM
+    machine_mode = CS_MODE_64
+    machine_arch = CS_ARCH_X86
 
     print('Working on: {}'.format(args.application_name))
     dict_per_bnch={}

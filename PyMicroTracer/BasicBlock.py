@@ -240,10 +240,10 @@ if __name__ == "__main__":
 
     import logging
 
-    m_m = CS_MODE_ARM + CS_MODE_V8
-    m_a = CS_ARCH_ARM
+    m_m = CS_MODE_64 #  CS_MODE_ARM + CS_MODE_V8
+    m_a = CS_ARCH_X86 #  CS_ARCH_ARM
 
-    ops = ((int("0x1044c", 16), "00b0a0e3"),
+    ops_arm = ((int("0x1044c", 16), "00b0a0e3"),
            (int("0x10450", 16), "00e0a0e3"),
            (int("0x10454", 16), "04109de4"),
            (int("0x10458", 16), "0d20a0e1"),
@@ -254,13 +254,13 @@ if __name__ == "__main__":
            (int("0x1046c", 16), "0c009fe5"),
            (int("0x10470", 16), "0c309fe5"))
 
-    '''
-    ops = (("0x00000000004022e0", "ff3522bd2100"),
-       ("0x00000000004022e6" , "ff2524bd2100"),
-       ("0x0000000000402790" , "ff25d2ba2100"),
-       ("0x0000000000402790" , "ff25d2ba2100"),
-       ("0x0000000000402340" , "ff25fabc2100"))
-    '''
+
+    ops = ((int("0x000000000066cc61", 16), "48890a"),
+           (int("0x000000000066cc64", 16), "4889ca"),
+           (int("0x000000000066cc67", 16), "488d4a20"),
+           (int("0x000000000066cc6b", 16), "483bc8"),
+           (int("0x000000000066cc6e", 16), "72f1"))
+
     pref = '/home/mbaharan/ArmOutput/'
     DUT = BasicBlock(operations=ops, machine_mode=m_m, machine_arch=m_a, bbl_id=0, log_handler=logging,
                      prefix=pref)

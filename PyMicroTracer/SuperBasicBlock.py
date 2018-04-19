@@ -450,7 +450,7 @@ if __name__ == "__main__":
     lineStyle = ['r--']
     bchName = ['hello_world']
     maxBlock = [1232]
-    from capstone import CS_ARCH_X86, CS_MODE_64, CS_ARCH_ARM, CS_MODE_V8, CS_MODE_ARM
+    from capstone import CS_ARCH_X86, CS_MODE_64
     from PyMicroTracer.Utility import plot_me
     import matplotlib.pyplot as plt
     import logging
@@ -460,8 +460,8 @@ if __name__ == "__main__":
     xTick = [(2 ** i) for i in xTickBase]
     xTickLabel = []
     dicIPC = {}
-    m_m = CS_MODE_ARM + CS_MODE_V8
-    m_a = CS_ARCH_ARM
+    m_m = CS_MODE_64
+    m_a = CS_ARCH_X86
 
     for i in xTickBase:
         xTickLabel.append("$2^{%d}$" % i)

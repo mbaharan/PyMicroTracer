@@ -43,7 +43,7 @@ class DifferentialProcessor:
                                                     progressbar.Bar(),
                                                     '] [', progressbar.Timer(), ', ',
                                                     progressbar.ETA(), '] ',
-                                                    ], redirect_stdout=True)
+                                                    ])#, redirect_stdout=True)
 
     @property
     def how_many_bbl_has_been_fetched(self):
@@ -182,21 +182,21 @@ class DifferentialProcessor:
                                            end_bbl_id=end_bbl_id, should_run_static=should_run_static,
                                            which_arch=self.scheduling_option)
 
-                if ipc_per_window_hyprid is None and icc_hybrid != -1:
+                if ipc_per_window_hyprid is None and icc_hybrid.any():
                     backend_end_size = len(icc_hybrid)
                     ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
                 else:
                     backend_end_size = 0
                     ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
 
-                if hybrid_ipc is None and icc_hybrid != -1:
+                if hybrid_ipc is None and icc_hybrid.any():
                     hybrid_ipc = zeros((len(window_sizes), len(icc_hybrid)))
 
                 max_parallel_inst_hb_per_addr = max(max_parallel_inst_hb_per_addr, max_parallel_inst_hb_per_ws)
                 max_parallel_inst_sbb_per_addr = max(max_parallel_inst_sbb_per_addr, max_parallel_inst_sbb_per_ws)
 
                 ipc_per_window_super.append(ipc_super)
-                if icc_hybrid != -1:
+                if icc_hybrid.any():
                     ipc_per_window_hyprid[idx, :] = icc_hybrid[:, 0]
                 static_ipc_per_window.append(ipc_static)
 
@@ -233,9 +233,9 @@ class DifferentialProcessor:
         from PyMicroTracer.HybridBasicBlock import HybridBasicBlock
         from PyMicroTracer.StaticBasicBlock import BasicBlockParser
 
-        ipc_super = -1
-        icc_hybrid = -1
-        ipc_static = -1
+        ipc_super = []
+        icc_hybrid = []
+        ipc_static = []
         offset = -1
         max_parallel_inst_sbb = -1
         max_parallel_inst_hb = -1
@@ -290,7 +290,7 @@ class DifferentialProcessor:
             a = 1.381
             b = 0.7693
             p = log2(bbl_window_size)
-            return ceil(a * (2 ** (b * p)))
+            return [ceil(a * (2 ** (b * p)))]
 
 
 def _generate_address(batch_size, max_bbl_id, coverage):

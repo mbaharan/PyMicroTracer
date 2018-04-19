@@ -69,10 +69,10 @@ class Instruction:
             (self.readRegisters, self.writeRegisters) = inst.regs_access()
 
             self.readRegisters = set(self.readRegisters)
-            if self.machineArch == CS_ARCH_X86:
+            if self.machineArch == CS_ARCH_X86 and consider_pc:
                 self.readRegisters = set(self.readRegisters) - {34, 41}  # Remove IP, and RIP from registers
             elif self.machineArch == CS_ARCH_ARM and consider_pc:
-                self.readRegisters = set(self.readRegisters) - {ARM_REG_PC} # Remove IP, and RIP from registers
+                self.readRegisters = set(self.readRegisters) - {ARM_REG_PC}  # Remove IP, and RIP from registers
 
             self.readRegisters = list(self.readRegisters)
 
@@ -146,12 +146,12 @@ if __name__ == "__main__":
         print("-------------------------------------")
 
 
-    ops = ["eb93", "4989d1"] #x86 operations
-    arm_ops=["00b0a0e3", "00e0a0e3", "04109de4"]
-    m_m = CS_MODE_ARM + CS_MODE_V8
-    m_a = CS_ARCH_ARM
+    ops = ["48890a", "4889ca", "488d4a20", "483bc8", "72f1"]  # x86 operations
+    arm_ops = ["00b0a0e3", "00e0a0e3", "04109de4"]  # arm operation
+    m_m = CS_MODE_64  # CS_MODE_ARM + CS_MODE_V8
+    m_a = CS_ARCH_X86  # CS_ARCH_ARM
 
-    for op in arm_ops:
+    for op in ops:
         design_under_test = Instruction(machine_mode=m_m, machine_arch=m_a, log_handler=logging,
                                         ip=1, op=op, log_output=True)
         design_under_test.dis_assemble()
