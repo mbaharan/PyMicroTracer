@@ -155,6 +155,7 @@ class DifferentialProcessor:
 
         max_parallel_inst_sbb = []
         max_parallel_inst_hb = []
+        backend_window_size_all = []
 
         w_index = 0
         for window_size in window_sizes:
@@ -223,8 +224,10 @@ class DifferentialProcessor:
 
             should_run_static = False
 
+            backend_window_size_all.append(backend_window_size)
+
         return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb,
-                list(backend_window_size)]
+                backend_window_size_all]
 
     def _simulate_behav(self, window_size, start_from_bbl_id, end_bbl_id, should_run_static=True,
                         which_arch=set(['S', 'H', 'O'])):

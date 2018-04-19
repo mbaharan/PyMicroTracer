@@ -108,9 +108,13 @@ if __name__ == "__main__":
 
     if 'H' in args.scheduling_method:
         h_ipc = whole_ipc[0]
-        for b_idx in range(0, len(whole_ipc[5])):
-            back_end_str = str(whole_ipc[5][b_idx])
-            dict_per_bnch["hybrid_"+back_end_str] = h_ipc[:, b_idx]
+        if len(whole_ipc[5][0]) > 1:
+            for b_idx in range(0, len(whole_ipc[5][0])):
+                back_end_str = str(whole_ipc[5][b_idx])
+                dict_per_bnch["hybrid_"+back_end_str] = h_ipc[:, b_idx]
+        else:
+            dict_per_bnch["hybrid"] = h_ipc[:, 0]
+
     if 'O' in args.scheduling_method:
         dict_per_bnch["super"] = whole_ipc[1]
     if 'S' in args.scheduling_method:
@@ -119,6 +123,7 @@ if __name__ == "__main__":
     dict_per_bnch["max_sched_hbb" + back_end_str] = list(whole_ipc[3])
     dict_per_bnch["max_sched_sbb"] = whole_ipc[4]
     dict_per_bnch["windows"] = window_sizes
+    dict_per_bnch["back_windows"] = whole_ipc[5]
 
     print(whole_ipc)
     file_name = args.result_directory + args.application_name
