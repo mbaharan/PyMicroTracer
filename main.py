@@ -35,7 +35,7 @@ if __name__ == "__main__":
     window_sizes = [2**power for power in powers]
 
     coverage = float(args.coverage)
-    batch_size = 2*max(window_sizes)  # To capture the dependency across BB better
+    batch_size = max(window_sizes)
 
     fig_axis = plt.subplots()
 

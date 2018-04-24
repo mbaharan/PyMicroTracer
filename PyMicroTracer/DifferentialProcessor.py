@@ -43,7 +43,7 @@ class DifferentialProcessor:
                                                     progressbar.Bar(),
                                                     '] [', progressbar.Timer(), ', ',
                                                     progressbar.ETA(), '] ',
-                                                    ])#, redirect_stdout=True)
+                                                    ], redirect_stdout=True)
 
     @property
     def how_many_bbl_has_been_fetched(self):
@@ -186,9 +186,9 @@ class DifferentialProcessor:
                 if ipc_per_window_hyprid is None and icc_hybrid.any():
                     backend_end_size = len(icc_hybrid)
                     ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
-                else:
-                    backend_end_size = 0
-                    ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
+                #else:
+                #    backend_end_size = 0
+                #    ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
 
                 if hybrid_ipc is None and icc_hybrid.any():
                     hybrid_ipc = zeros((len(window_sizes), len(icc_hybrid)))
