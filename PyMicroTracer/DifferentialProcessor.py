@@ -290,8 +290,8 @@ class DifferentialProcessor:
             return self.fixed_instruction_windows_size
         else:
             from math import log2, ceil
-            a = 1.381
-            b = 0.7693
+            a = 3.634
+            b = 0.6209
             p = log2(bbl_window_size)
             return [ceil(a * (2 ** (b * p)))]
 
