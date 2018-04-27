@@ -6,7 +6,7 @@ class DifferentialProcessor:
     def __init__(self, db_file_name, machine_mode, machine_arch, log_handler, batch_size=1000, how_many_iteration=-1,
                  prefix_dir='./', app_name='',
                  draw_dependency_graphs=False, log_output=True, fixed_instruction_windows_size=None,
-                 scheduling_option=None):
+                 scheduling_option=None, index_file=None):
 
         from os.path import isdir, isfile
         from sys import exit
@@ -20,6 +20,8 @@ class DifferentialProcessor:
             self._prefix_dir = prefix_dir
         else:
             self._prefix_dir = './'
+
+        self.index_file = index_file
 
         self._log_output = log_output
         self._machine_mode = machine_mode
@@ -141,10 +143,10 @@ class DifferentialProcessor:
 
         if 0 < coverage <= 100:
             addresses = _generate_address(batch_size=self._batch_size, max_bbl_id=self.maximum_number_of_bbl,
-                                          coverage=coverage)
+                                          coverage=coverage, index_file=self.index_file)
         else:
             addresses = _generate_address(batch_size=self._batch_size, max_bbl_id=self.maximum_number_of_bbl,
-                                          coverage=20)
+                                          coverage=20, index_file=self.index_file)
 
         how_many_addr = len(addresses)
         count = 0
@@ -296,11 +298,23 @@ class DifferentialProcessor:
             return [ceil(a * (2 ** (b * p)))]
 
 
-def _generate_address(batch_size, max_bbl_id, coverage):
+def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
 
     import random
-
     addresses = []
+
+    if index_file is not None:
+        print("Reading indices file.")
+        import gzip
+
+        with gzip.open(index_file, 'rt') as file:
+            for line in file:
+                if line.startswith('#@#'):
+                    data = line.split(' ')
+                    end = int(data[1].strip('\t\r\n'))
+                    start = min(end + (batch_size-1), max_bbl_id)
+                    addresses.append([start, end])
+        return addresses
 
     how_many_segment = int(max_bbl_id / batch_size)
 

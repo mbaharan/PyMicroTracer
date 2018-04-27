@@ -324,14 +324,15 @@ class SuperBasicBlock:
             self.log_handler.error("Cannot export graph as a PDF.")
     """
 
-    def extract_ipc(self, dependency_graph):
+    def extract_ipc(self, dependency_graph, fetch_width):
         if nx.is_directed(dependency_graph):
             self.log_handler.info("Extracting IPC...")
             lng_path = nx.dag_longest_path(dependency_graph)
             if self.log_output:
                 self.log_handler.info("Longest path:%s\n" % str(lng_path))
             self.longest_path = str(lng_path)
-            self.IPC = float(dependency_graph.order()) / (len(lng_path))
+            l = len(lng_path)
+            self.IPC = float(dependency_graph.order() * (l+fetch_width / l*fetch_width))
 
     def draw_html_table(self, data_portion=[], dependency_matrix=None, suffix_name=''):
         import HTML
@@ -374,7 +375,8 @@ class SuperBasicBlock:
                 graph.remove_node(n)
         return [levels, max_parallel_inst]
 
-    def extract_ipc_based_on_rob(self, window_size=-1, data_source=None, save_output=False, save_local_level=True):
+    def extract_ipc_based_on_rob(self, window_size=-1, fetch_width = 8, data_source=None,
+                                 save_output=False, save_local_level=False):
         if data_source is None:
             data_source = self.parsedInst
 
@@ -409,7 +411,7 @@ class SuperBasicBlock:
                                 how_many = str(len(level)) + '\n'
                                 log_file_level.writelines(how_many)
 
-                    self.extract_ipc(dependency_graph=dependency_graph)
+                    self.extract_ipc(dependency_graph=dependency_graph, fetch_width=fetch_width)
                     local_ipc.append(self.IPC)
                     max_parallel_inst = max(max_local, max_parallel_inst)
 
@@ -424,7 +426,7 @@ class SuperBasicBlock:
             data_portion = self.parsedInst
             dependency_matrix = self.extract_raw_dep(data_portion=data_portion)
             dependency_graph = self.extract_graph(dependency_matrix=dependency_matrix)
-            self.extract_ipc(dependency_graph=dependency_graph)
+            self.extract_ipc(dependency_graph=dependency_graph, fetch_width=fetch_width)
             [level_local, max_local] = self.find_levels(dependency_graph.copy())
             max_parallel_inst = max(max_local, max_parallel_inst)
 

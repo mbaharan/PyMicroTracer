@@ -115,5 +115,9 @@ parser.add_argument("-s", "--scheduling_method", help="There are three different
 parser.add_argument("-p", "--plot", help="Plots the final IPC for different ",
                     action="store_true", default=False)
 
+parser.add_argument("-a", "--index_file", help="Reads generated bbl_ids from file.",
+                    type=extant_file, default=None)
+
+
 
 args = parser.parse_args()

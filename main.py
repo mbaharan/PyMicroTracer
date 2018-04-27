@@ -35,7 +35,7 @@ if __name__ == "__main__":
     window_sizes = [2**power for power in powers]
 
     coverage = float(args.coverage)
-    batch_size = max(window_sizes)
+    batch_size = 10*max(window_sizes)
 
     fig_axis = plt.subplots()
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
                                prefix_dir=args.result_directory, draw_dependency_graphs=args.draw_dependency_graph,
                                app_name=args.application_name, log_output=False,
                                fixed_instruction_windows_size=fix_b_window,
-                               scheduling_option=args.scheduling_method)
+                               scheduling_option=args.scheduling_method, index_file=args.index_file)
 
     whole_ipc = dp.simulate_uniform(window_sizes=window_sizes, coverage=coverage)
 
