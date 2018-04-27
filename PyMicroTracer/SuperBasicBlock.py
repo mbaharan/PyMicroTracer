@@ -331,8 +331,13 @@ class SuperBasicBlock:
             if self.log_output:
                 self.log_handler.info("Longest path:%s\n" % str(lng_path))
             self.longest_path = str(lng_path)
-            l = len(lng_path)
-            self.IPC = float(dependency_graph.order() * (l+fetch_width / l*fetch_width))
+            clock_per_level = len(lng_path)
+            num_instruction = dependency_graph.order()
+            clock_for_fetching = num_instruction / fetch_width
+            self.IPC = num_instruction / (clock_per_level + clock_for_fetching)
+
+
+            # self.IPC = float( * (l+fetch_width / l*fetch_width))
 
     def draw_html_table(self, data_portion=[], dependency_matrix=None, suffix_name=''):
         import HTML
