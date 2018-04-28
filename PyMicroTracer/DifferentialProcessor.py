@@ -138,10 +138,10 @@ class DifferentialProcessor:
                                                                                                end_bbl_id))
 
                 [ipc_super, icc_hybrid, ipc_static, max_parallel_inst_sbb_per_ws, max_parallel_inst_hb_per_ws,
-                 backend_window_size, offset] \
+                 backend_window_size, offset, future_levels_hybrid] \
                     = self._simulate_behav(window_size=window_size, start_from_bbl_id=start_from_bbl_id,
                                            end_bbl_id=end_bbl_id, should_run_static=should_run_static,
-                                           which_arch=self.scheduling_option)
+                                           which_arch=self.scheduling_option, last_levels_hybrid=local_levels_hybrid)
 
                 if ipc_per_window_hyprid is None and icc_hybrid.any():
                     backend_end_size = len(icc_hybrid)
@@ -169,6 +169,10 @@ class DifferentialProcessor:
 
             for idx in range(0, backend_end_size):
                 hybrid_ipc[w_index, idx] = sum(ipc_per_window_hyprid[:, idx]) / how_many_addr
+
+            levels.append(future_levels_hybrid)
+
+
 
             w_index = w_index + 1
 
@@ -216,7 +220,9 @@ class DifferentialProcessor:
             offset = hbb.fetch_instructions(end_bbl_id=end_bbl_id)
             print("Extracting IPC for hybrid bbl...")
             self._log_handler.info("Extracting IPC for hybrid bbl...")
-            [icc_hybrid, max_parallel_inst_hb] = hbb.extract_ipc_based_on_bbl(bbl_size_scheduler=window_size)
+            [icc_hybrid, max_parallel_inst_hb, future_levels_hybrid] = \
+                hbb.extract_ipc_based_on_bbl(bbl_size_scheduler=window_size,
+                                             last_levels_hybtid=last_levels_hybrid)
             del hbb
 
         if 'O' in which_arch:
@@ -244,7 +250,7 @@ class DifferentialProcessor:
             del st_bbl
 
         return [ipc_super, icc_hybrid, ipc_static, max_parallel_inst_sbb, max_parallel_inst_hb,
-                backend_window_size, offset]
+                backend_window_size, offset, future_levels_hybrid]
 
     def _calculate_instr_window_size(self, bbl_window_size):
 
