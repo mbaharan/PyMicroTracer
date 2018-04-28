@@ -77,59 +77,6 @@ class DifferentialProcessor:
 
         return val
 
-    def simulate_full_coverage(self, window_sizes=None, passed_start_from_bbl_id=-1):
-        if not isinstance(window_sizes, type([])):
-            exit("window size should list of positive integers")
-
-        max_idx = self._get_max_idx()
-
-        hybrid_ipc = []
-        super_ipc = []
-        static_ipc = []
-
-        count = 0
-        total = len(window_sizes) * max_idx
-        self.bar.update(0.0)
-        for window_size in window_sizes:
-            self._log_handler.info("------------>window size:{}<------------".format(window_size))
-            if passed_start_from_bbl_id < 0:
-                start_from_bbl_id = self.maximum_number_of_bbl
-            else:
-                start_from_bbl_id = passed_start_from_bbl_id
-
-            ipc_per_window_hyprid = []
-            ipc_per_window_super = []
-            static_ipc_per_window = []
-
-            for idx in range(0, max_idx):
-                end_bbl_id = max(start_from_bbl_id - self._batch_size, 1)
-
-                print("window size:{}, start_bbl_id={}, end_bbl_id={}".format(window_size, start_from_bbl_id
-                                                                              , end_bbl_id))
-                self._log_handler.info("window size:{}, start_bbl_id={}, end_bbl_id={}".format(window_size,
-                                                                                               start_from_bbl_id,
-                                                                                               end_bbl_id))
-
-                [ipc_super, icc_hybrid, ipc_static, offset] = self._simulate_behav(window_size=window_size,
-                                                                                   start_from_bbl_id=start_from_bbl_id,
-                                                                                   end_bbl_id=end_bbl_id)
-                ipc_per_window_super.append(ipc_super)
-                ipc_per_window_hyprid.append(icc_hybrid)
-                static_ipc_per_window.append(ipc_static)
-
-                start_from_bbl_id = offset
-                count = count + 1
-                self.bar.update(count * 100 / total)
-
-            if len(ipc_per_window_hyprid):
-                hybrid_ipc.append(sum(ipc_per_window_hyprid)/len(ipc_per_window_hyprid))
-            if len(ipc_per_window_super):
-                super_ipc.append(sum(ipc_per_window_super)/len(ipc_per_window_super))
-            if len(static_ipc_per_window):
-                static_ipc.append(sum(static_ipc_per_window)/len(static_ipc_per_window))
-
-        return [hybrid_ipc, super_ipc, static_ipc]
-
     def simulate_uniform(self, window_sizes=None, coverage=20):
         if not isinstance(window_sizes, type([])):
             exit("window size should list of positive integers")
@@ -160,6 +107,11 @@ class DifferentialProcessor:
         backend_window_size_all = []
 
         w_index = 0
+
+        levels = []
+        should_I_read_from_last_levels = False
+
+
         for window_size in window_sizes:
             self._log_handler.info("------------>window size:{}<------------".format(window_size))
 
@@ -172,6 +124,12 @@ class DifferentialProcessor:
 
             for idx in range(0, how_many_addr):
                 [start_from_bbl_id, end_bbl_id] = addresses[idx]
+
+                if should_I_read_from_last_levels:
+                    local_levels_hybrid = levels[idx]
+                else:
+                    local_levels_hybrid = None
+
 
                 print("window size:{}, start_bbl_id={}, end_bbl_id={}".format(window_size, start_from_bbl_id
                                                                               , end_bbl_id))
@@ -228,11 +186,13 @@ class DifferentialProcessor:
 
             backend_window_size_all.append(backend_window_size)
 
+            should_I_read_from_last_levels = True
+
         return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb,
                 backend_window_size_all]
 
     def _simulate_behav(self, window_size, start_from_bbl_id, end_bbl_id, should_run_static=True,
-                        which_arch=set(['S', 'H', 'O'])):
+                        last_levels_hybrid=None, which_arch=set(['S', 'H', 'O'])):
 
         from PyMicroTracer.SuperBasicBlock import SuperBasicBlock
         from PyMicroTracer.HybridBasicBlock import HybridBasicBlock
