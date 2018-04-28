@@ -162,6 +162,7 @@ class DifferentialProcessor:
                 static_ipc_per_window.append(ipc_static)
 
                 count = count + 1
+                levels.append(future_levels_hybrid)
                 self.bar.update(count * 100 / total)
 
             max_parallel_inst_sbb.append(max_parallel_inst_sbb_per_addr)
@@ -170,7 +171,7 @@ class DifferentialProcessor:
             for idx in range(0, backend_end_size):
                 hybrid_ipc[w_index, idx] = sum(ipc_per_window_hyprid[:, idx]) / how_many_addr
 
-            levels.append(future_levels_hybrid)
+
 
 
 
