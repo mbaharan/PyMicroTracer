@@ -97,6 +97,7 @@ class HybridBasicBlock(SuperBasicBlock):
 
                 else:
                         last_level_local = last_levels_hybtid[idx]
+                        local_data= None
 
                 [ins_clks, max_scheduled_inst_loca, future_level_local] = self.hybrid_extract_ipc_based_on_rob(
                     window_size=window_size,

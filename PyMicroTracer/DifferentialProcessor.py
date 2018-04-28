@@ -171,10 +171,6 @@ class DifferentialProcessor:
             for idx in range(0, backend_end_size):
                 hybrid_ipc[w_index, idx] = sum(ipc_per_window_hyprid[:, idx]) / how_many_addr
 
-
-
-
-
             w_index = w_index + 1
 
             if len(ipc_per_window_super):
