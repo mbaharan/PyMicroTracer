@@ -70,7 +70,8 @@ class HybridBasicBlock(SuperBasicBlock):
                 how_many_seg = len(last_levels_hybtid)
             else:
                 how_many_seg = ceil(self.how_many_basic_block_has_been_read / bbl_size_scheduler)
-                future_levels_hybrid = []
+
+            future_levels_hybrid = []
 
             window_size = []
 
@@ -148,6 +149,8 @@ class HybridBasicBlock(SuperBasicBlock):
                                  suffix_name=suffix_name)
             self.export_graph_as_dot(data_portion=data_portion, dependency_graph=dependency_graph,
                                      suffix_name=suffix_name)
+        if last_level is not None:
+            level_local = None
 
         return [ins_clk, max_parallel_inst, level_local]
 
