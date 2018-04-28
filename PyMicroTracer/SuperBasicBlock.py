@@ -49,6 +49,7 @@ class SuperBasicBlock:
         self.how_many_basic_block_has_been_read = 0
         self.last_bbl_id_has_been_read = 0
         self.IPC = 0
+        self.how_many_cycle_needed = 0
 
     def fetch_instructions(self, end_bbl_id=-1):
         bbl_id = -1
@@ -334,7 +335,9 @@ class SuperBasicBlock:
             clock_per_level = len(lng_path)
             num_instruction = dependency_graph.order()
             clock_for_fetching = num_instruction / fetch_width
-            self.IPC = num_instruction / (clock_per_level + clock_for_fetching)
+            self.how_many_cycle_needed = clock_per_level + clock_for_fetching
+            self.IPC = num_instruction / self.how_many_cycle_needed
+
 
 
             # self.IPC = float( * (l+fetch_width / l*fetch_width))
@@ -395,7 +398,7 @@ class SuperBasicBlock:
             val = total
 
         seg = int(total / val)
-        local_ipc = []
+        local_cycle = []
         if seg > 0:
             for idx in range(0, seg):
                 start = (idx * val)
@@ -417,7 +420,7 @@ class SuperBasicBlock:
                                 log_file_level.writelines(how_many)
 
                     self.extract_ipc(dependency_graph=dependency_graph, fetch_width=fetch_width)
-                    local_ipc.append(self.IPC)
+                    local_cycle.append(self.how_many_cycle_needed)
                     max_parallel_inst = max(max_local, max_parallel_inst)
 
                     if save_output:
@@ -441,12 +444,13 @@ class SuperBasicBlock:
                                   suffix_name=suffix_name)
                 self.export_graph_as_dot(data_portion=data_portion, dependency_graph=dependency_graph,
                                          suffix_name=suffix_name)
-            local_ipc.append(self.IPC)
 
-        if len(local_ipc) > 1:
-            avg_ipc = sum(local_ipc) / len(local_ipc)
+            local_cycle.append(self.how_many_cycle_needed)
+
+        if len(local_cycle) > 1:
+            avg_ipc = self.howManyParsedInst / sum(local_cycle)
         else:
-            avg_ipc = local_ipc[0]
+            avg_ipc = self.howManyParsedInst/local_cycle[0]
 
         return [avg_ipc, max_parallel_inst]
 

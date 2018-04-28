@@ -73,10 +73,11 @@ class HybridBasicBlock(SuperBasicBlock):
 
                 len_backend = len(window_size)
 
-                ipc = zeros((how_many_seg, len_backend))
+                seg_ins_clk = zeros((how_many_seg, len_backend, 2))
                 val = zeros((len_backend, 1))
 
             for idx in range(0, int(how_many_seg)):
+
                 start = self.start_from_bbl_id - bbl_size_scheduler*idx
                 end = max(start - bbl_size_scheduler, self.last_bbl_id_has_been_read)
 
@@ -84,15 +85,21 @@ class HybridBasicBlock(SuperBasicBlock):
                     [start_inst, end_inst] = self._extract_start_end_based_on_bbls(start, end)
                     if start_inst > -1:
                         local_data = self.parsedInst[start_inst: end_inst]
-                        [hbb_ipc, max_scheduled_inst_loca] = self.extract_ipc_based_on_rob(window_size=window_size,
+                        [ins_clks, max_scheduled_inst_loca] = self.extract_ipc_based_on_rob(window_size=window_size,
                                                                                            data_source=local_data,
                                                                                            save_output=False)
+                        inst_sched_idx = 0
+                        for ins_clk in ins_clks:
+                            seg_ins_clk[idx][inst_sched_idx][1] = seg_ins_clk[idx][inst_sched_idx][1] + ins_clk[1]
+                            seg_ins_clk[idx][inst_sched_idx][0] = seg_ins_clk[idx][inst_sched_idx][0] + ins_clk[0]
+                            inst_sched_idx = inst_sched_idx + 1
 
                         max_scheduled_inst = max(max_scheduled_inst, max_scheduled_inst_loca)
-                        ipc[idx, :] = hbb_ipc
 
-            for idx in range(0, len_backend):
-                val[idx, 0] = sum(ipc[:, idx]) / how_many_seg
+            for idx_inst_wid in range(0, len_backend):
+                inst = sum(seg_ins_clk[:, idx_inst_wid, 0])
+                cyc = sum(seg_ins_clk[:, idx_inst_wid, 1])
+                val[idx_inst_wid, 0] = inst / cyc
 
         return [val, max_scheduled_inst]
 
@@ -110,7 +117,7 @@ class HybridBasicBlock(SuperBasicBlock):
         [level_local, max_local] = self.find_levels(dependency_graph)
         max_parallel_inst = max(max_local, max_parallel_inst)
 
-        avg_ipc = self._cal_ipc(instruction_scheduler_window_sizes=window_size, levels=level_local, total_inst=total)
+        ins_clk = self._cal_ipc(instruction_scheduler_window_sizes=window_size, levels=level_local, total_inst=total)
 
         if save_output:
             suffix_name = "%d_%s" % (window_size, 'all')
@@ -119,7 +126,7 @@ class HybridBasicBlock(SuperBasicBlock):
             self.export_graph_as_dot(data_portion=data_portion, dependency_graph=dependency_graph,
                                      suffix_name=suffix_name)
 
-        return [avg_ipc, max_parallel_inst]
+        return [ins_clk, max_parallel_inst]
 
     def _cal_ipc(self, instruction_scheduler_window_sizes, levels, total_inst):
 
@@ -134,6 +141,6 @@ class HybridBasicBlock(SuperBasicBlock):
 
             for level in levels:
                 cycles = cycles + max(ceil(len(level)/backend_instruction_windows_size), 1)
-            vals.append(total_inst / cycles)
+            vals.append([total_inst, cycles])
 
         return vals
