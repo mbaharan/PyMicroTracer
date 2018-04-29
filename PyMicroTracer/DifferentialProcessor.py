@@ -266,6 +266,7 @@ def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
 
     import random
     addresses = []
+    import numpy as np
 
     if index_file is not None:
         print("Reading indices file.")
@@ -274,10 +275,11 @@ def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
         with gzip.open(index_file, 'rt') as file:
             for line in file:
                 if line.startswith('#@#'):
-                    data = line.split(' ')
-                    end = int(data[1].strip('\t\r\n'))
-                    start = min(end + (batch_size-1), max_bbl_id)
-                    addresses.append([start, end])
+                    if coverage <= np.random.uniform(0, 100, 1)[0]:
+                        data = line.split(' ')
+                        end = int(data[1].strip('\t\r\n'))
+                        start = min(end + (batch_size-1), max_bbl_id)
+                        addresses.append([start, end])
         return addresses
 
     how_many_segment = int(max_bbl_id / batch_size)
