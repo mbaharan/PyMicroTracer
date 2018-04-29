@@ -277,9 +277,12 @@ def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
                 if line.startswith('#@#'):
                     if coverage <= np.random.uniform(0, 100, 1)[0]:
                         data = line.split(' ')
-                        end = int(data[1].strip('\t\r\n'))
-                        start = min(end + (batch_size-1), max_bbl_id)
-                        addresses.append([start, end])
+                        try:
+                            end = int(data[1].strip('\t\r\n'))
+                            start = min(end + (batch_size-1), max_bbl_id)
+                            addresses.append([start, end])
+                        except ValueError:
+                            pass
         return addresses
 
     how_many_segment = int(max_bbl_id / batch_size)
