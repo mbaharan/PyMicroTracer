@@ -30,8 +30,11 @@ class DifferentialProcessor:
         self._draw_dependency_graphs = draw_dependency_graphs
         self._how_many_bbl_has_been_fetched = 0
 
-        if batch_size > self.maximum_number_of_bbl:
-            self._batch_size = self.maximum_number_of_bbl
+        if index_file is None:
+            if batch_size > self.maximum_number_of_bbl:
+                self._batch_size = self.maximum_number_of_bbl
+            else:
+                self._batch_size = batch_size
         else:
             self._batch_size = batch_size
 
