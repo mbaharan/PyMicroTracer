@@ -164,6 +164,8 @@ class DifferentialProcessor:
                 count = count + 1
                 if should_I_read_from_last_levels is False:
                     levels.append(future_levels_hybrid)
+
+                print("completed:{}%".format(int(count * 100 / total)))
                 self.bar.update(count * 100 / total)
 
             max_parallel_inst_sbb.append(max_parallel_inst_sbb_per_addr)
@@ -188,7 +190,7 @@ class DifferentialProcessor:
 
             backend_window_size_all.append(backend_window_size)
 
-            should_I_read_from_last_levels = True
+            should_I_read_from_last_levels = False
 
         return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb,
                 backend_window_size_all]
@@ -256,8 +258,8 @@ class DifferentialProcessor:
             return self.fixed_instruction_windows_size
         else:
             from math import log2, ceil
-            a = 3.634
-            b = 0.6209
+            a = 1.488  #3.634
+            b = 0.7065  #0.6209
             p = log2(bbl_window_size)
             return [ceil(a * (2 ** (b * p)))]
 
@@ -283,6 +285,7 @@ def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
                             addresses.append([start, end])
                         except ValueError:
                             pass
+        print("The total indices are: {}".format(len(addresses)))
         return addresses
 
     how_many_segment = int(max_bbl_id / batch_size)
