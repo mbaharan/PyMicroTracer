@@ -30,11 +30,8 @@ class DifferentialProcessor:
         self._draw_dependency_graphs = draw_dependency_graphs
         self._how_many_bbl_has_been_fetched = 0
 
-        if index_file is None:
-            if batch_size > self.maximum_number_of_bbl:
-                self._batch_size = self.maximum_number_of_bbl
-            else:
-                self._batch_size = batch_size
+        if batch_size > self.maximum_number_of_bbl:
+            self._batch_size = self.maximum_number_of_bbl
         else:
             self._batch_size = batch_size
 
@@ -62,9 +59,9 @@ class DifferentialProcessor:
             import pyodbc
             db = pyodbc.connect(self._dsn)
             c = db.cursor()
-            c.execute("SELECT MAX(bbl_id) AS howManyBB FROM ins;")
+            c.execute("SELECT cast(MAX(bbl_id) as text) AS howManyBB FROM ins;")
             data = c.fetchall()[0][0]
-            val = data
+            val = int(data)
             self._maximum_number_of_bbl = val
         return val
 
