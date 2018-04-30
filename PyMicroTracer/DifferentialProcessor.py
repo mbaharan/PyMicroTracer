@@ -277,7 +277,7 @@ def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
         with gzip.open(index_file, 'rt') as file:
             for line in file:
                 if line.startswith('#@#'):
-                    if coverage <= np.random.uniform(0, 100, 1)[0]:
+                    if coverage >= np.random.uniform(0, 100, 1)[0]:
                         data = line.split(' ')
                         try:
                             end = int(data[1].strip('\t\r\n'))
