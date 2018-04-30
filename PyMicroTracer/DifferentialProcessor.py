@@ -110,7 +110,7 @@ class DifferentialProcessor:
 
         levels = []
         should_I_read_from_last_levels = False
-
+        should_I_save_levels = False
 
         for window_size in window_sizes:
             self._log_handler.info("------------>window size:{}<------------".format(window_size))
@@ -162,8 +162,10 @@ class DifferentialProcessor:
                 static_ipc_per_window.append(ipc_static)
 
                 count = count + 1
-                if should_I_read_from_last_levels is False:
-                    levels.append(future_levels_hybrid)
+
+                if should_I_save_levels:
+                    if should_I_read_from_last_levels is False:
+                        levels.append(future_levels_hybrid)
 
                 print("completed:{}%".format(int(count * 100 / total)))
                 self.bar.update(count * 100 / total)
@@ -190,13 +192,14 @@ class DifferentialProcessor:
 
             backend_window_size_all.append(backend_window_size)
 
-            should_I_read_from_last_levels = False
+            if should_I_save_levels:
+                should_I_read_from_last_levels = True
 
         return [hybrid_ipc, super_ipc, static_ipc, max_parallel_inst_hb, max_parallel_inst_sbb,
                 backend_window_size_all]
 
     def _simulate_behav(self, window_size, start_from_bbl_id, end_bbl_id, should_run_static=True,
-                        last_levels_hybrid=None, which_arch=set(['S', 'H', 'O'])):
+                        last_levels_hybrid=None, which_arch=set(['S', 'H', 'O']), should_I_save_levels=False):
 
         from PyMicroTracer.SuperBasicBlock import SuperBasicBlock
         from PyMicroTracer.HybridBasicBlock import HybridBasicBlock
@@ -216,7 +219,8 @@ class DifferentialProcessor:
                                    machine_mode=self._machine_mode, machine_arch=self._machine_arch,
                                    log_handler=self._log_handler,
                                    instruction_scheduler_window_size=backend_window_size,
-                                   prefix_dir=self._prefix_dir, log_output=self._log_output)
+                                   prefix_dir=self._prefix_dir, log_output=self._log_output,
+                                   should_I_save_levels=should_I_save_levels)
             offset = hbb.fetch_instructions(end_bbl_id=end_bbl_id)
             print("Extracting IPC for hybrid bbl...")
             self._log_handler.info("Extracting IPC for hybrid bbl...")
@@ -299,4 +303,5 @@ def _generate_address(batch_size, max_bbl_id, coverage, index_file=None):
         start = min(end + batch_size, max_bbl_id)
         addresses.append([start, end])
 
+    print("The total indices are: {}".format(len(addresses)))
     return addresses

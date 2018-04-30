@@ -5,13 +5,14 @@ import PyMicroTracer.Constant as cnst
 
 class HybridBasicBlock(SuperBasicBlock):
     def __init__(self, db_file_name, start_from_bbl_id, machine_mode, machine_arch, log_handler,
-                 instruction_scheduler_window_size=-1, prefix_dir='./', log_output=False):
+                 instruction_scheduler_window_size=-1, prefix_dir='./', log_output=False, should_I_save_levels=False):
         super().__init__(db_file_name=db_file_name, start_from_bbl_id=start_from_bbl_id, machine_mode=machine_mode,
                          machine_arch=machine_arch, log_handler=log_handler,
                          prefix_dir=prefix_dir, log_output=log_output)
 
         self.bbl_instr_indx = {}
         self._instruction_scheduler_window_size = instruction_scheduler_window_size
+        self.should_I_save_levels = should_I_save_levels
 
     def skim_instructions(self, data):
         count_local = 0
@@ -106,8 +107,9 @@ class HybridBasicBlock(SuperBasicBlock):
                     save_output=False,
                     last_level=last_level_local)
 
-                if last_levels_hybtid is None:
-                    future_levels_hybrid.append(future_level_local)
+                if self.should_I_save_levels:
+                    if last_levels_hybtid is None:
+                        future_levels_hybrid.append(future_level_local)
 
                 inst_sched_idx = 0
                 for ins_clk in ins_clks:
@@ -123,7 +125,6 @@ class HybridBasicBlock(SuperBasicBlock):
                 val[idx_inst_wid, 0] = inst / cyc
 
         return [val, max_scheduled_inst, future_levels_hybrid]
-
 
     def hybrid_extract_ipc_based_on_rob(self, window_size=[], data_source=None, save_output=False, last_level=None):
         max_parallel_inst = -1
