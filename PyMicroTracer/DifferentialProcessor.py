@@ -214,6 +214,19 @@ class DifferentialProcessor:
 
         backend_window_size = self._calculate_instr_window_size(window_size)
 
+        if 'O' in which_arch:
+            sbb = SuperBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
+                                  machine_mode=self._machine_mode, machine_arch=self._machine_arch,
+                                  log_handler=self._log_handler,
+                                  prefix_dir=self._prefix_dir, log_output=self._log_output)
+            sbb.fetch_instructions(end_bbl_id=end_bbl_id)
+            print("Extracting IPC for super bbl...")
+            self._log_handler.info("Extracting IPC for super bbl...")
+            [ipc_super, max_parallel_inst_sbb, how_many_scheduled] = sbb.extract_ipc_based_on_rob(window_size=window_size,
+                                                                              save_output=self._draw_dependency_graphs)
+
+            del sbb
+
         if 'H' in which_arch:
             hbb = HybridBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
                                    machine_mode=self._machine_mode, machine_arch=self._machine_arch,
@@ -226,20 +239,9 @@ class DifferentialProcessor:
             self._log_handler.info("Extracting IPC for hybrid bbl...")
             [icc_hybrid, max_parallel_inst_hb, future_levels_hybrid] = \
                 hbb.extract_ipc_based_on_bbl(bbl_size_scheduler=window_size,
-                                             last_levels_hybtid=last_levels_hybrid)
+                                             last_levels_hybtid=last_levels_hybrid,
+                                             how_many_scheduled_for_o3=how_many_scheduled)
             del hbb
-
-        if 'O' in which_arch:
-            sbb = SuperBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
-                                  machine_mode=self._machine_mode, machine_arch=self._machine_arch,
-                                  log_handler=self._log_handler,
-                                  prefix_dir=self._prefix_dir, log_output=self._log_output)
-            sbb.fetch_instructions(end_bbl_id=end_bbl_id)
-            print("Extracting IPC for super bbl...")
-            self._log_handler.info("Extracting IPC for super bbl...")
-            [ipc_super, max_parallel_inst_sbb] = sbb.extract_ipc_based_on_rob(window_size=window_size,
-                                                                              save_output=self._draw_dependency_graphs)
-            del sbb
 
         if 'S' in which_arch and should_run_static:
             st_bbl = BasicBlockParser(db_name=self._db_file_name, machine_mode=self._machine_mode,

@@ -335,7 +335,7 @@ class SuperBasicBlock:
             clock_per_level = len(lng_path)
             num_instruction = dependency_graph.order()
             clock_for_fetching = num_instruction / fetch_width
-            self.how_many_cycle_needed = clock_per_level + clock_for_fetching
+            self.how_many_cycle_needed = clock_per_level  # + clock_for_fetching
             self.IPC = num_instruction / self.how_many_cycle_needed
 
 
@@ -383,7 +383,7 @@ class SuperBasicBlock:
                 graph.remove_node(n)
         return [levels, max_parallel_inst]
 
-    def extract_ipc_based_on_rob(self, window_size=-1, fetch_width = 8, data_source=None,
+    def extract_ipc_based_on_rob(self, window_size=-1, fetch_width=8, data_source=None,
                                  save_output=False, save_local_level=False):
         if data_source is None:
             data_source = self.parsedInst
@@ -452,7 +452,7 @@ class SuperBasicBlock:
         else:
             avg_ipc = self.howManyParsedInst/local_cycle[0]
 
-        return [avg_ipc, max_parallel_inst]
+        return [avg_ipc, max_parallel_inst, seg]
 
 
 if __name__ == "__main__":

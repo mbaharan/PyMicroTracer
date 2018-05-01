@@ -59,7 +59,8 @@ class HybridBasicBlock(SuperBasicBlock):
             self.log_handler.error("For start:{} and end:{}, idx is empty")
             return [-1, -1]
 
-    def extract_ipc_based_on_bbl(self, bbl_size_scheduler=-1, infinite_scheduler=False, last_levels_hybtid=None):
+    def extract_ipc_based_on_bbl(self, bbl_size_scheduler=-1, infinite_scheduler=False, last_levels_hybtid=None,
+                                 how_many_scheduled_for_o3=-1):
         from math import ceil
         from numpy import zeros
 
@@ -105,7 +106,7 @@ class HybridBasicBlock(SuperBasicBlock):
                     window_size=window_size,
                     data_source=local_data,
                     save_output=False,
-                    last_level=last_level_local)
+                    last_level=last_level_local, ratio=(1/how_many_scheduled_for_o3))
 
                 if self.should_I_save_levels:
                     if last_levels_hybtid is None:
@@ -122,11 +123,13 @@ class HybridBasicBlock(SuperBasicBlock):
             for idx_inst_wid in range(0, len_backend):
                 inst = sum(seg_ins_clk[:, idx_inst_wid, 0])
                 cyc = sum(seg_ins_clk[:, idx_inst_wid, 1])
+
                 val[idx_inst_wid, 0] = inst / cyc
 
         return [val, max_scheduled_inst, future_levels_hybrid]
 
-    def hybrid_extract_ipc_based_on_rob(self, window_size=[], data_source=None, save_output=False, last_level=None):
+    def hybrid_extract_ipc_based_on_rob(self, window_size=[], data_source=None, save_output=False,
+                                        last_level=None, ratio=1):
         max_parallel_inst = -1
 
         if data_source is None:
@@ -142,7 +145,7 @@ class HybridBasicBlock(SuperBasicBlock):
             level_local = last_level
             max_parallel_inst = -1
 
-        ins_clk = self._cal_ipc(instruction_scheduler_window_sizes=window_size, levels=level_local)
+        ins_clk = self._cal_ipc(instruction_scheduler_window_sizes=window_size, levels=level_local, ratio=ratio)
 
         if save_output and last_level is None:
             suffix_name = "%d_%s" % (window_size, 'all')
@@ -155,7 +158,7 @@ class HybridBasicBlock(SuperBasicBlock):
 
         return [ins_clk, max_parallel_inst, level_local]
 
-    def _cal_ipc(self, instruction_scheduler_window_sizes, levels):
+    def _cal_ipc(self, instruction_scheduler_window_sizes, levels, fetch_width=16, ratio=1):
 
         vals = list()
         from math import ceil
@@ -167,8 +170,11 @@ class HybridBasicBlock(SuperBasicBlock):
                                   .format(backend_instruction_windows_size))
             total_inst = 0
             for level in levels:
-                total_inst = total_inst + len(level)
-                cycles = cycles + max(ceil(len(level)/backend_instruction_windows_size), 1)
+                inst_count = len(level)
+                total_inst = total_inst + inst_count
+                cycles = cycles + ceil(inst_count/fetch_width)  # max(ceil(inst_count/backend_instruction_windows_size), 1) \
+                         #+ ceil(inst_count/fetch_width * ratio)
+
             vals.append([total_inst, cycles])
 
         return vals
