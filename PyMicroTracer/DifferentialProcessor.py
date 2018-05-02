@@ -122,6 +122,7 @@ class DifferentialProcessor:
             max_parallel_inst_hb_per_addr = -1
             max_parallel_inst_sbb_per_addr = -1
 
+            actual_counted = 0
             for idx in range(0, how_many_addr):
                 [start_from_bbl_id, end_bbl_id] = addresses[idx]
 
@@ -142,6 +143,7 @@ class DifferentialProcessor:
                     = self._simulate_behav(window_size=window_size, start_from_bbl_id=start_from_bbl_id,
                                            end_bbl_id=end_bbl_id, should_run_static=should_run_static,
                                            which_arch=self.scheduling_option, last_levels_hybrid=local_levels_hybrid)
+                actual_counted = actual_counted + 1
 
                 if ipc_per_window_hyprid is None and icc_hybrid.any():
                     backend_end_size = len(icc_hybrid)
@@ -212,20 +214,8 @@ class DifferentialProcessor:
         max_parallel_inst_sbb = -1
         max_parallel_inst_hb = -1
 
-        backend_window_size = self._calculate_instr_window_size(window_size)
+        backend_window_size = self._calculate_instr_window_size(window_size)\
 
-        if 'O' in which_arch:
-            sbb = SuperBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
-                                  machine_mode=self._machine_mode, machine_arch=self._machine_arch,
-                                  log_handler=self._log_handler,
-                                  prefix_dir=self._prefix_dir, log_output=self._log_output)
-            sbb.fetch_instructions(end_bbl_id=end_bbl_id)
-            print("Extracting IPC for super bbl...")
-            self._log_handler.info("Extracting IPC for super bbl...")
-            [ipc_super, max_parallel_inst_sbb, how_many_scheduled] = sbb.extract_ipc_based_on_rob(window_size=window_size,
-                                                                              save_output=self._draw_dependency_graphs)
-
-            del sbb
 
         if 'H' in which_arch:
             hbb = HybridBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
@@ -240,8 +230,22 @@ class DifferentialProcessor:
             [icc_hybrid, max_parallel_inst_hb, future_levels_hybrid] = \
                 hbb.extract_ipc_based_on_bbl(bbl_size_scheduler=window_size,
                                              last_levels_hybtid=last_levels_hybrid,
-                                             how_many_scheduled_for_o3=how_many_scheduled)
+                                             how_many_scheduled_for_o3=1)
             del hbb
+
+        if 'O' in which_arch:
+            sbb = SuperBasicBlock(db_file_name=self._db_file_name, start_from_bbl_id=start_from_bbl_id,
+                                  machine_mode=self._machine_mode, machine_arch=self._machine_arch,
+                                  log_handler=self._log_handler,
+                                  prefix_dir=self._prefix_dir, log_output=self._log_output)
+            sbb.fetch_instructions(end_bbl_id=end_bbl_id)
+            print("Extracting IPC for super bbl...")
+            self._log_handler.info("Extracting IPC for super bbl...")
+            [ipc_super, max_parallel_inst_sbb, how_many_scheduled] = sbb.extract_ipc_based_on_rob(window_size=window_size,
+                                                                              save_output=self._draw_dependency_graphs)
+
+            del sbb
+
 
         if 'S' in which_arch and should_run_static:
             st_bbl = BasicBlockParser(db_name=self._db_file_name, machine_mode=self._machine_mode,

@@ -35,7 +35,7 @@ if __name__ == "__main__":
     window_sizes = [2**power for power in powers]
 
     coverage = float(args.coverage)
-    batch_size = 10*max(window_sizes)
+    batch_size = 10*(2**10)
 
     fig_axis = plt.subplots()
 

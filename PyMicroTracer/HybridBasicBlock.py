@@ -56,7 +56,7 @@ class HybridBasicBlock(SuperBasicBlock):
         if len(idx):
             return [min(idx), max(idx)]
         else:
-            self.log_handler.error("For start:{} and end:{}, idx is empty")
+            self.log_handler.error("For start:{} and end:{}, idx is empty".format(start, end))
             return [-1, -1]
 
     def extract_ipc_based_on_bbl(self, bbl_size_scheduler=-1, infinite_scheduler=False, last_levels_hybtid=None,
@@ -96,6 +96,8 @@ class HybridBasicBlock(SuperBasicBlock):
                         [start_inst, end_inst] = self._extract_start_end_based_on_bbls(start, end)
                         if start_inst > -1:
                             local_data = self.parsedInst[start_inst: end_inst]
+                        else:
+                            raise ValueError
                         last_level_local = None
 
                 else:
@@ -172,7 +174,7 @@ class HybridBasicBlock(SuperBasicBlock):
             for level in levels:
                 inst_count = len(level)
                 total_inst = total_inst + inst_count
-                cycles = cycles + ceil(inst_count/fetch_width)  # max(ceil(inst_count/backend_instruction_windows_size), 1) \
+                cycles = cycles + 1 #ceil(inst_count/fetch_width)  # max(ceil(inst_count/backend_instruction_windows_size), 1) \
                          #+ ceil(inst_count/fetch_width * ratio)
 
             vals.append([total_inst, cycles])
