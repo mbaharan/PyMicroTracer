@@ -69,7 +69,7 @@ class SuperBasicBlock:
             end_bbl = end_bbl_id
 
             while bbl_id >= end_bbl:
-                str_query = "SELECT * FROM ins"
+                str_query = "SELECT CAST(bbl_id as 'TEXT') as bbl_id, ip, dis, op FROM ins"
                 str_query = str_query + (" WHERE ins.bbl_id=%d" % bbl_id)
                 if self.log_output:
                     self.log_handler.debug("Retrieving instruction for BB#%d. Please wait..." % bbl_id)

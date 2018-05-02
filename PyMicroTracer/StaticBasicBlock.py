@@ -55,7 +55,7 @@ class BasicBlockParser:
             if self.dsn != '':
                 localDbCon = pyodbc.connect(self.dsn)
                 cr = localDbCon.cursor()
-                strSrch = "SELECT * FROM ins"
+                strSrch = "SELECT CAST(bbl_id as 'TEXT') as bbl_id, ip, dis, op FROM ins"
                 if bbl_id > -1:
                     strSrch = strSrch + (" WHERE ins.bbl_id=%d" % bbl_id)
                     if self.log_output:
@@ -71,9 +71,9 @@ class BasicBlockParser:
         import pyodbc
         db = pyodbc.connect(self.dsn)
         c = db.cursor()
-        c.execute("SELECT MAX(bbl_id) AS howManyBB FROM ins;")
+        c.execute("SELECT CAST(MAX(bbl_id) AS'TEXT') AS howManyBB FROM ins;")
         data = c.fetchall()[0][0]
-        return data
+        return int(data)
 
     def analyze_bbls(self, data):
 
