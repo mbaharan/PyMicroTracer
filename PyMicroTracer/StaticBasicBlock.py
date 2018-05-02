@@ -85,7 +85,7 @@ class BasicBlockParser:
 
         if len(data) > 0:
             bbAddr = int(data[0][1], 16)
-            bbID = data[0][0]
+            bbID = int(data[0][0])
             self.BBid2BaseAddr[bbID] = bbAddr
             if bbAddr not in self.BB:
                 from PyMicroTracer.BasicBlock import BasicBlock
