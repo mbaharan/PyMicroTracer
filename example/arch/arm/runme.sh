@@ -11,5 +11,5 @@ coverage="100"
 resultFolder="./res/"
 applicationName="hello"
 
-../../../main.py $traceFile $coverage 5,14 $resultFolder $applicationName -b 5,8 -s h
+../../../main.py $traceFile $coverage 5,6 $resultFolder $applicationName -b 5,6 -s h,o -p -d
 

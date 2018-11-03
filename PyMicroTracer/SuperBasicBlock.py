@@ -413,10 +413,12 @@ class SuperBasicBlock:
                     local_ipc.append(self.IPC)
                     max_parallel_inst = max(max_local, max_parallel_inst)
 
-                    if save_output:
+                    if save_output and type(window_size) is not list:
                         suffix_name = "%d_%d" % (val, end)
-                        self.draw_html_table(data_portion=data_portion, dependency_matrix=dependency_matrix,
-                                             suffix_name=suffix_name)
+                        #Install python HTML table generator from here https://www.decalage.info/python/html#attachments and install it.
+                        # you need to change whole print function APIs to python3 standard.
+                        #self.draw_html_table(data_portion=data_portion, dependency_matrix=dependency_matrix,
+                        #                     suffix_name=suffix_name)
                         self.export_graph_as_dot(data_portion=data_portion, dependency_graph=dependency_graph,
                                                  suffix_name=suffix_name)
         else:

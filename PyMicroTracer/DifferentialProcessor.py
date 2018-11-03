@@ -181,22 +181,22 @@ class DifferentialProcessor:
                     = self._simulate_behav(window_size=window_size, start_from_bbl_id=start_from_bbl_id,
                                            end_bbl_id=end_bbl_id, should_run_static=should_run_static,
                                            which_arch=self.scheduling_option)
-
-                if ipc_per_window_hyprid is None and icc_hybrid != -1:
+                import numpy as np
+                if ipc_per_window_hyprid is None and type(icc_hybrid) is np.ndarray:
                     backend_end_size = len(icc_hybrid)
                     ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
-                else:
-                    backend_end_size = 0
-                    ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
+                #else:
+                #    backend_end_size = 0
+                #    ipc_per_window_hyprid = zeros((how_many_addr, backend_end_size))
 
-                if hybrid_ipc is None and icc_hybrid != -1:
+                if hybrid_ipc is None and type(icc_hybrid) is np.ndarray:
                     hybrid_ipc = zeros((len(window_sizes), len(icc_hybrid)))
 
                 max_parallel_inst_hb_per_addr = max(max_parallel_inst_hb_per_addr, max_parallel_inst_hb_per_ws)
                 max_parallel_inst_sbb_per_addr = max(max_parallel_inst_sbb_per_addr, max_parallel_inst_sbb_per_ws)
 
                 ipc_per_window_super.append(ipc_super)
-                if icc_hybrid != -1:
+                if type(icc_hybrid) is np.ndarray:
                     ipc_per_window_hyprid[idx, :] = icc_hybrid[:, 0]
                 static_ipc_per_window.append(ipc_static)
 

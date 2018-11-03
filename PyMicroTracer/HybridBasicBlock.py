@@ -84,7 +84,8 @@ class HybridBasicBlock(SuperBasicBlock):
                         local_data = self.parsedInst[start_inst: end_inst]
                         [hbb_ipc, max_scheduled_inst_loca] = self.extract_ipc_based_on_rob(window_size=window_size,
                                                                                            data_source=local_data,
-                                                                                           save_output=False)
+                                                                                           save_output=True)
+                        
 
                         max_scheduled_inst = max(max_scheduled_inst, max_scheduled_inst_loca)
                         ipc[idx, :] = hbb_ipc
@@ -110,7 +111,7 @@ class HybridBasicBlock(SuperBasicBlock):
 
         avg_ipc = self._cal_ipc(instruction_scheduler_window_sizes=window_size, levels=level_local, total_inst=total)
 
-        if save_output:
+        if save_output and type(window_size) is not list:
             suffix_name = "%d_%s" % (window_size, 'all')
             self.draw_html_table(data_portion=data_portion, dependency_matrix=dependency_matrix,
                                  suffix_name=suffix_name)
