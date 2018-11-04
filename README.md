@@ -53,6 +53,6 @@ Please refer to example file and execute the `runme.sh` file
 ./runme.sh
 ```
 All the generated graph and result will be saved in `./res` folder
-### Extracting 'db' file out of your application
+### Extracting 'db' file out of your benchmark
 ---
-You can clone 'Tracer' tool from https://github.com/SideChannelMarvels/Tracer to extract instauction db file from your application.
+You can clone 'Tracer' tool from https://github.com/SideChannelMarvels/Tracer to extract instruction db file from your application. If your application is going to leave a long trace of instruction, it is a good idea to modify [Tracer.cpp](https://github.com/SideChannelMarvels/Tracer/blob/master/TracerPIN/Tracer.cpp#L76) and create an index for `bbl_id` in `ins` table.
